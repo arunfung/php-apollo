@@ -1,0 +1,26 @@
+{
+    "name": "arunfung/php-apollo",
+    "description": "a apollo client for php.",
+    "keywords": ["apollo", "php", "php-apollo", "apollo-client"],
+    "type": "library",
+    "license": "MIT",
+    "support": {
+        "issues": "https://github.com/arunfung/php-apollo/issues",
+        "source": "https://github.com/arunfung/php-apollo"
+    },
+    "authors": [
+        {
+            "name": "Arun Fung",
+            "email": "arunfung@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {
+        "php": "~7.1"
+    },
+    "autoload": {
+        "psr-4": {
+            "ArunFung\\PhpApollo\\": "src"
+        }
+    }
+}
