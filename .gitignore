@@ -1,5 +1,6 @@
 .idea
 *.DS_Store
+.env
 /vendor
 /coverage
 sftp-config.json

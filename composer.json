@@ -14,9 +14,10 @@
             "email": "arunfung@gmail.com"
         }
     ],
-    "minimum-stability": "dev",
     "require": {
-        "php": "~7.1"
+        "ext-json": "*",
+        "php": "~7.1",
+        "guzzlehttp/guzzle": "^6.5"
     },
     "autoload": {
         "psr-4": {
