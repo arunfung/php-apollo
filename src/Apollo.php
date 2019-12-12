@@ -3,9 +3,8 @@
 namespace ArunFung\PhpApollo;
 
 use ArunFung\PhpApollo\Exceptions\ApolloException;
-use ArunFung\PhpApollo\Exceptions\BadBaseUrlException;
 
-class Apollo
+class Apollo extends Config
 {
     /** @var string apollo server */
     protected $server = '';
@@ -22,35 +21,27 @@ class Apollo
     /** @var string client ip */
     protected $ip;
 
+    /** @var string cache path */
     protected $cache_path = '/var/www/php-apollo-cache';
 
-    protected $env_example_path = '';
-
-    protected $env_example = '/.env.example';
-
-    protected $env_path = '';
-
-    protected $env = '/.env';
-
+    /** @var string last configs array */
     private $last_configs = [];
 
-    /**
-     * @param $namespace
-     * @return string
-     * @throws ApolloException
-     */
-    public function getHttpCacheConfigsPath(string $namespace)
+    public function getNotificationsPath(array $notifications)
     {
-        $params = ['ip' => $this->getIp()];
-        $path = sprintf('/configfiles/%d/%s/%s?', $this->getAppId(), $this->getCluster(), $namespace) . urlencode(http_build_query($params));
-
-        return $path;
+        $params = [
+            'appId' => $this->getAppId(),
+            'cluster' => $this->getCluster(),
+            'notifications' => json_encode($notifications)
+        ];
+        return sprintf('/notifications/v2?%s', urlencode(http_build_query($params)));
     }
 
     /**
+     * get no http cache configs path
+     *
      * @param string $namespace
      * @return string
-     * @throws ApolloException
      */
     public function getNoHttpCacheConfigsPath(string $namespace)
     {
@@ -60,98 +51,105 @@ class Apollo
             $params['releaseKey'] = $releaseKey;
         }
         $query = urlencode(http_build_query($params));
-        $path = sprintf('/configs/%d/%s/%s?', $this->getAppId(), $this->getCluster(), $namespace) . $query;
-
+        $path = sprintf(
+            '/configs/%d/%s/%s?',
+            $this->getAppId(),
+            $this->getCluster(),
+            $namespace
+            );
+        $path .= $query;
         return $path;
     }
 
-    private function getReleaseKey(string $namespace)
+    /**
+     * @param string $namespace
+     * @return string
+     */
+    private function getReleaseKey(string $namespace): string
     {
         $last_config = $this->getLastConfig($namespace);
-        $this->last_configs[$namespace] = $last_config;
         return $last_config['releaseKey'] ?? '';
-    }
-
-    public function getNotificationsPath(array $notifications)
-    {
-        $params = [
-            'appId' => $this->getAppId(),
-            'cluster' => $this->getCluster(),
-            'notifications' => json_encode($notifications)
-        ];
-        $path = '/notifications/v2?' . urlencode(http_build_query($params));
-        return $path;
     }
 
     public function getConfigs(string $namespace, string $result)
     {
         if (!empty($result)) {
-            $this->last_configs[$namespace] = json_decode($result, true);
-            $config_file = $this->getLastConfigFile($namespace);
+            $this->last_configs = array_merge((array) $this->last_configs, [$namespace => json_decode($result, true)]);
+            $config_file = $this->getLastConfigFilePath($namespace);
             file_put_contents($config_file, $result);
         }
+
         $last_configs = $this->last_configs[$namespace] ?? [];
-        $configs = $last_configs['configurations'] ?? [];
-        return $configs;
+        return $last_configs['configurations'] ?? [];
     }
 
-    private function getLastConfig(string $namespace)
+    /**
+     * @param string $namespace
+     * @return array
+     */
+    private function getLastConfig(string $namespace): array
     {
         $last_config = [];
-        $config_file = $this->getLastConfigFile($namespace);
+        $config_file = $this->getLastConfigFilePath($namespace);
         if (file_exists($config_file)) {
             $last_config = json_decode(file_get_contents($config_file), true);
+        }
+        if (!empty($last_config)) {
+            $this->last_configs = array_merge((array) $this->last_configs, [$namespace => $last_config]);
         }
         return $last_config;
     }
 
-    private function getLastConfigFile($namespace)
+    /**
+     * @param string $namespace
+     * @return string
+     */
+    private function getLastConfigFilePath(string $namespace)
     {
-        $last_cache_path = sprintf('%s/%d', $this->cache_path, $this->getAppId());
-        if (!file_exists($last_cache_path)) {
-            mkdir($last_cache_path, 0766, true);
+        $cache_path = sprintf('%s/%d', rtrim($this->cache_path, '/'), $this->getAppId());
+        if (!file_exists($cache_path)) {
+            mkdir($cache_path, 0766, true);
         }
-        $last_config_file = sprintf('%s/config-%s.php', $last_cache_path, $namespace);
-        return $last_config_file;
+        return sprintf('%s/config-%s.php', $cache_path, $namespace);
     }
 
     /**
      * @return string
-     * @throws BadBaseUrlException
      */
     public function getServer(): string
     {
-        if (empty($this->server)) {
-            throw new BadBaseUrlException('server url is empty!');
-        }
         return rtrim($this->server, '/');
     }
 
     /**
      * @param string $server
+     * @throws ApolloException
      */
     public function setServer(string $server)
     {
+        if (empty($server)) {
+            throw new ApolloException('server url is empty!');
+        }
         $this->server = $server;
     }
 
     /**
      * @return int
-     * @throws ApolloException
      */
     public function getAppId(): int
     {
-        if (empty($this->app_id)) {
-            throw new ApolloException('app id is empty!');
-        }
         return $this->app_id;
     }
 
     /**
      * @param int $app_id
+     * @throws ApolloException
      */
     public function setAppId(int $app_id)
     {
+        if (empty($app_id)) {
+            throw new ApolloException('app id is empty!');
+        }
         $this->app_id = $app_id;
     }
 
@@ -165,7 +163,6 @@ class Apollo
 
     /**
      * @param string $cluster
-     * @return $this
      * @throws ApolloException
      */
     public function setCluster(string $cluster)
@@ -174,7 +171,6 @@ class Apollo
             throw new ApolloException('cluster name is empty!');
         }
         $this->cluster = $cluster;
-        return $this;
     }
 
     /**
@@ -186,5 +182,25 @@ class Apollo
             $this->ip = getHostByName(getHostName()) ?? '127.0.0.1';
         }
         return $this->ip;
+    }
+
+    /**
+     * @return array
+     */
+    public function getNamespaces(): array
+    {
+        return $this->namespaces;
+    }
+
+    /**
+     * @param array $namespaces
+     * @throws ApolloException
+     */
+    public function setNamespaces(array $namespaces): void
+    {
+        if (empty($namespaces)) {
+            throw new ApolloException('namespaces is empty!');
+        }
+        $this->namespaces = $namespaces;
     }
 }

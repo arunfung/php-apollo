@@ -5,19 +5,22 @@ use ArunFung\PhpApollo\ApolloClient;
 
 class TestApolloClient extends ApolloClient
 {
-    protected $server = '';
-    protected $app_id = 0;
-
     protected $env_example_path = __DIR__;
 
-    protected $env_example = '/.env.example';
+    protected $env_example = '.env.example';
 
     protected $env_path = __DIR__;
 
-    protected $env = '/.env';
+    protected $env = '.env';
 
 }
+$server = '';
+$app_id = 0;
+$namespaces = [
+    "application",
+    "datasource",
+];
 
-$testApolloClient = new TestApolloClient();
+$testApolloClient = new TestApolloClient($server,$app_id,$namespaces);
 
 $testApolloClient->pullConfigs();
