@@ -14,13 +14,18 @@ class TestApolloClient extends ApolloClient
     protected $env = '.env';
 
 }
+
 $server = '';
+
 $app_id = 0;
+
 $namespaces = [
     "application",
     "datasource",
 ];
 
-$testApolloClient = new TestApolloClient($server,$app_id,$namespaces);
+$testApolloClient = new TestApolloClient($server, $app_id, $namespaces);
 
-$testApolloClient->pullConfigs();
+//$testApolloClient->pullConfigs();
+
+$testApolloClient->start();

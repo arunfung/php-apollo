@@ -45,7 +45,12 @@ $namespaces = [
     "datasource",
 ];
 
+// 实例化 Apollo Client
 $testApolloClient = new TestApolloClient($server,$app_id,$namespaces);
 
+// 拉取 Apollo 的配置写入本地配置文件（适合定时或者单次触发拉取配置）
 $testApolloClient->pullConfigs();
+
+// 开启应用感知配置更新并写入本地配置文件
+$testApolloClient->start();
 ```
