@@ -126,7 +126,7 @@ class ApolloClient extends Apollo
                         if ($value['notificationId'] != $lastNotificationId) {
                             $this->notifications[$value['namespaceName']]['notificationId'] = $value['notificationId'];
                         }
-                    };
+                    }
                     $this->pullConfigs();
                     echo round(memory_get_usage() / 1024 / 1024, 2) . " MB\n";
                 }

@@ -6,7 +6,7 @@ namespace ArunFung\PhpApollo;
  * Class Config
  * @package ArunFung\PhpApollo
  */
-abstract class Config
+class Config
 {
     /** @var string env example path */
     protected $env_example_path = '';
@@ -78,7 +78,7 @@ abstract class Config
      * @param string $file_path
      * @return array
      */
-    protected function envToArray(string $file_path): array
+    public function envToArray(string $file_path): array
     {
         if (!file_exists($file_path)) {
             echo sprintf('[%s] %s is not exists!', date('Y-m-d H:i:s'), $file_path) . "\n";
@@ -107,7 +107,7 @@ abstract class Config
      *
      * @param array $array
      */
-    protected function arrayToEnv(array $array)
+    public function arrayToEnv(array $array)
     {
         $env_file_path = $this->getEnvFilePath();
         $env = '';
@@ -116,6 +116,13 @@ abstract class Config
         foreach ($array as $key => $value) {
             $position++;
             if ($value !== "" || !is_numeric($key)) {
+                if(is_bool($value)) {
+                    if($value === true) {
+                        $value = "true";
+                    } else {
+                        $value = "false";
+                    }
+                }
                 $env .= $key . "=" . $value;
                 if ($position != $count) {
                     $env .= "\n";
@@ -125,5 +132,37 @@ abstract class Config
             }
         }
         file_put_contents($env_file_path, $env);
+    }
+
+    /**
+     * @param string $env_example_path
+     */
+    public function setEnvExamplePath(string $env_example_path): void
+    {
+        $this->env_example_path = $env_example_path;
+    }
+
+    /**
+     * @param string $env_example
+     */
+    public function setEnvExample(string $env_example): void
+    {
+        $this->env_example = $env_example;
+    }
+
+    /**
+     * @param string $env_path
+     */
+    public function setEnvPath(string $env_path): void
+    {
+        $this->env_path = $env_path;
+    }
+
+    /**
+     * @param string $env
+     */
+    public function setEnv(string $env): void
+    {
+        $this->env = $env;
     }
 }
