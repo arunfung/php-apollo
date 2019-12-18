@@ -217,6 +217,14 @@ class Apollo extends Config
     }
 
     /**
+     * @param string $cache_path
+     */
+    public function setCachePath(string $cache_path): void
+    {
+        $this->cache_path = $cache_path;
+    }
+
+    /**
      * @param array $namespaces
      * @throws ApolloException
      */

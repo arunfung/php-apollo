@@ -56,3 +56,12 @@ $testApolloClient->pullConfigs();
 // 开启应用感知配置更新并写入本地配置文件
 $testApolloClient->start();
 ```
+
+##### 本地缓存管理
+
+```php
+// 配置默认缓存目录 /var/www/php-apollo-cache
+// 也可以自定义缓存目录
+$cache_path = '/data/apollo';
+$testApolloClient->setCachePath($cache_path);
+```
